@@ -8,7 +8,7 @@ export interface INavigationState {}
 export class Navigation extends React.Component<INavigationProps, INavigationState> {
     render() {
         return (
-            <div className="navigation">
+            <div className="navigation">navigation
                 <Settings/>
             </div>
         );
