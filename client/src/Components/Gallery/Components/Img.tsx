@@ -18,7 +18,7 @@ export class Img extends React.Component<IImgProps, IImgState> {
 
         if (this.props.type === 'cover') return (
             <img 
-                className={`img ${this.props.type}`} 
+                className={`Img ${this.props.type}`} 
                 src={this.props.src} 
                 alt={`image-${this.props.id}`}
             />
@@ -26,7 +26,7 @@ export class Img extends React.Component<IImgProps, IImgState> {
         
         return (
             <img 
-                className={`img default`} 
+                className={`Img default`} 
                 src={this.props.src} 
                 alt={`image-${this.props.id}`}
             />

@@ -29,7 +29,7 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
 
     render() {
         return (
-            <div className="gallery">gallery
+            <div className="Gallery">gallery
                 {this.generateImages(this.props.path)}
             </div>
         );

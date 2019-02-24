@@ -7,7 +7,7 @@ export interface ISettingsState {}
 export class Settings extends React.Component<ISettingsProps, ISettingsState> {
     render() {
         return (
-            <div className="settings">settings</div>
+            <div className="Settings">settings</div>
         );
     }
 }
