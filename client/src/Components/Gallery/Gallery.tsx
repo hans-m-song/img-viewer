@@ -1,5 +1,9 @@
 import React from 'react';
+
 import { Img, IImgProps, IImgState } from './Components/Img';
+
+import './Gallery.scss';
+
 // import * as path from 'path';
 // import * as fs from 'fs';
 

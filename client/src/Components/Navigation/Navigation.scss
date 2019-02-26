@@ -1,0 +1,23 @@
+@import '../../vars.scss';
+
+.Navigation {
+    /* layout */
+    padding: 1em;
+    display: flex;
+    justify-content: space-between;
+
+    background-color: $color-primary;
+
+    nav {
+        /* layout */
+        display: flex;
+
+        a {
+            padding: 1em;
+        }
+    }
+
+    .Settings {
+        margin-right: -5;
+    }
+}

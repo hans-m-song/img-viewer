@@ -7,46 +7,38 @@ import React, { Component, FormEvent } from 'react';
 import './normalize.css'
 import './App.scss';
 
+import { IO, makeGetQuery } from './utils';
+
 import {
   Navigation,
   Gallery,
+  Footer,
+  Debug,
 } from './Components/index';
 
-interface IIO {}
-
-class IO {
-  log(message: any, ...args: any[]) {
-    console.log(message, ...args);
-  }
-
-  error(message: any, ...args: any[]) {
-    console.error(message, ...args);
-  }
-
-  constructor(props?: IIO) {}
+interface IManifest {
+  alias: string;
+  path: string;
+  meta: object;
 }
 
-class App extends Component {
+class Manifest {
+  constructor(props?: IManifest) {}
+}
+
+class App extends React.Component{
   io = new IO();
 
   state = {
-    waitingForServer: true,
     server: {
       status: 'offline',
       message: 'none',
     },
-    response: '',
-    post: '',
-    get: '',
-    responseToRequest: '',
+    serverIntervalCheck: setInterval(() => this.statServer(), 2000),
   };
 
-  makeGetQuery(query: any) {
-    return Object.keys(query)
-      .map(k => `${encodeURIComponent(k)}=${encodeURIComponent(query[k])}`).join('&')
-  }
 
-  async statServer() {
+  async statServer(): Promise<void> {
     const response: any = await fetch('/api/live/', { method: 'GET' });
 
     if (response.status !== 200 || !(/application\/json/g.test(response.headers.get('content-type')))) {
@@ -56,7 +48,6 @@ class App extends Component {
     const body = await response.json();
 
     this.setState({
-      waitingForServer: false,
       server: {
         ...this.state.server,
         status: 'online',
@@ -65,100 +56,48 @@ class App extends Component {
     });
   }
 
-  async statServerApi() {
-    const response: any = await fetch('/api', { method: 'GET' });
-
-    if (response.status !== 200 || !(/application\/json/g.test(response.headers.get('content-type')))) {
-      throw new Error(await response.text());
-    }
-    
-    const body = await response.json();
-    this.io.log(body);
-    return body;
-  }
-
-  componentDidMount() {
-    try { this.statServer(); } catch (err) { this.io.error(err) }
-    try { this.statServerApi(); } catch (err) { this.io.error(err) }
-  }
-
-  handlePostSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const response = await fetch('/api/post/', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({ post: this.state.post })
-    });
-    const body = await response.text();
-    this.io.log('received response', body)
-    this.setState({ responseToRequest: body });
-  }
-
-  handleGetSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const url = `/api/stat?${this.makeGetQuery({ dir: this.state.get })}`
-    this.io.log(url)
-    const response = await fetch(url,  {
-      method:'GET',
-      headers: {
-        'content-type': 'application/json'
-      }
-    });
-    const body = await response.text();
-    this.io.log('received response', body);
-    this.setState({ responseToRequest: body })
-  }
+  componentDidMount() {}
 
   render() {
-    if (this.state.server.status != 'online') {
+
+    if (this.state.server.status === 'online') {
+      clearInterval(this.state.serverIntervalCheck);
+    }
+
+    if (this.state.server.status !== 'online') {
       return (
-        <div className="App">
-          <p>Server is not online, make sure backend server is running and try again</p>
-          <p>Server status: {this.state.server.status}, message: {this.state.server.message}</p>
+        <div className='App'>
+          <div className='server-err'>
+            <p>Server is not online, waiting for backend to start</p>
+            <p>Server status: {this.state.server.status}, message: {this.state.server.message}</p>
+          </div>
         </div>
       );
     }
 
     if (env.DEBUG && env.DEBUG === 'API') {
       return (
-        <div className="App">
-          <p>Server status: {this.state.server.status}, message: {this.state.server.message}</p>
+        <div className='App'>
+          
+          <Debug
+            io={this.io}
+          />
 
-          <form onSubmit={this.handlePostSubmit}>
-            <p>api/post</p>
-            <input
-              type='text'
-              value={this.state.post}
-              onChange={e => this.setState({ post: e.target.value })}
-            />
-            <button type='submit'>submit</button>
-          </form>
-
-          <form onSubmit={this.handleGetSubmit}>
-            <p>api/stat</p>
-            <input
-              type='text'
-              value={this.state.get}
-              onChange={e => this.setState({ get: e.target.value })}
-            />
-            <button type='submit'>submit</button>
-          </form>
-
-          <p>{this.state.responseToRequest}</p>
         </div>
       );
     }
 
     return (
-      <div className="App">app
+      <div className='App'>
 
         <Navigation
         />
 
         <Gallery
           path='/home/axatol/Pictures'
+        />
+
+        <Footer
         />
 
       </div>

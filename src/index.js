@@ -12,18 +12,6 @@ const port = process.env.PORT || 5000;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/api', (req, res) => {
-    res.send({
-        message: 'api endpoints',
-        endpoints: [
-            '/api',
-            '/api/live',
-            '/api/post',
-            '/api/stat'
-        ]
-    });
-});
-
 app.get('/api/live', (req, res) => {
     res.send({ message: 'server is live' });
 });
@@ -43,6 +31,20 @@ app.get('api/stat', (req, res) => {
     const dir = fs.readdirSync(path.resolve(req.dir));
     console.log(dir)
     res.send({ stat: fs.readdirSync(dir) });
+});
+
+app.get('/api', (req, res) => {
+    res.send({
+        message: 'api endpoints',
+        endpoints:  app._router.stack
+            .map(route => route.route)
+            .filter(route => route)
+            .map(route => {
+                return {
+                    route: route.path || 'hidden',
+                    method: route.stack[0].method || 'hidden',
+                }}),
+    });
 });
 
 app.listen(port, () => console.log(`listening on port ${port}`));

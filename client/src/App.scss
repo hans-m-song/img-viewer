@@ -1,10 +1,34 @@
-$primary-color: #1e1e1e;
-
-@mixin normalize {
-    margin: 0;
-    padding: 0;
-}
+@import './vars.scss';
 
 .App {
-  
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  background-color: $color-background;
+
+  * {
+    color: $color-font;
+  }
+
+  .Navigation {
+    height: 3em;
+  }
+
+  .Gallery {
+    margin: 0 auto 0 auto;
+    width: 90vw;
+    flex-grow: 1;
+  }
+
+  .Footer {
+    height: 2em;
+  }
+
+}
+
+.server-err {
+  margin: auto;
+  text-align: center;
 }
