@@ -3,8 +3,11 @@ import React from 'react';
 import { Settings, ISettingsProps, ISettingsState } from './Components/Settings';
 
 import './Navigation.scss';
+import { IO } from '../../utils';
 
-export interface INavigationProps {}
+export interface INavigationProps {
+    io: IO;
+}
 
 export interface INavigationState {}
 

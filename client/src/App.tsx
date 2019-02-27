@@ -91,9 +91,11 @@ class App extends React.Component{
       <div className='App'>
 
         <Navigation
+          io={this.io}
         />
 
         <Gallery
+          io={this.io}
           path='/home/axatol/Pictures'
         />
 
