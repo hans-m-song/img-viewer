@@ -100,7 +100,7 @@ export class Debug extends React.Component<IDebugProps, IDebugState> {
 
     setEndpoint = (e: FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
-        console.log('setendpoint', e.target);
+        console.log('setendpoint', e.currentTarget);
         this.setState({});
     }
 
@@ -132,7 +132,7 @@ export class Debug extends React.Component<IDebugProps, IDebugState> {
                     <input
                         type='text'
                         value={this.state.post}
-                        onChange={e => this.setState({ post: e.target.value })}
+                        onChange={e => this.setState({ post: e.currentTarget.value })}
                     />
                     <button type='submit'>submit</button>
                 </form>
@@ -142,7 +142,7 @@ export class Debug extends React.Component<IDebugProps, IDebugState> {
                     <input
                         type='text'
                         value={this.state.get}
-                        onChange={e => this.setState({ get: e.target.value })}
+                        onChange={e => this.setState({ get: e.currentTarget.value })}
                     />
                     <button type='submit'>submit</button>
                 </form>

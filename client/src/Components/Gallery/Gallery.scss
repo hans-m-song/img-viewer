@@ -2,4 +2,38 @@
 
 .Gallery {
     background-color: $color-secondary;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1em;
+    
+    .change-directory {
+        display: flex;
+
+        *:not(p) {
+            color: black;
+            margin: 0.5em;
+        }
+    }
+
+    .img-array {
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .Img {
+            min-width: 100px;
+            min-height: 100px;
+            max-width: 80vw;
+        }
+    }
+
+    .img-array.empty {
+        text-align: center;
+        margin: auto;
+
+        .refetch {
+        }
+    }
 }

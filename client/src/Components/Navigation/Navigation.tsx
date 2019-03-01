@@ -16,7 +16,7 @@ export class Navigation extends React.Component<INavigationProps, INavigationSta
         return (
             <div className="Navigation">
 
-                <div className=''>header</div>
+                <div className=''>banner</div>
 
                 <nav className=''>
                     <a className='' href='#'>import session</a>
