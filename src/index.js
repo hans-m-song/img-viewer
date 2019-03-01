@@ -49,8 +49,8 @@ app.get('/api/dir', (req, res) => {
             });
         } else {
             res.status(404).send(err);
-            return;
         }
+        return;
     }
 
     res.send({ contents })
@@ -58,8 +58,10 @@ app.get('/api/dir', (req, res) => {
 });
 
 app.get('/api/file', (req, res) => {
-    if (!req.query.file)
+    if (!req.query.file) {
         res.status(403).send({ message: 'no file provided' });
+        return;
+    }
 
     // TODO limit files someone could request
 
@@ -77,6 +79,7 @@ app.get('/api/file', (req, res) => {
             });
         } else {
             res.status(404).send(err);
+            return;
         }
     }
 

@@ -2,13 +2,10 @@ if (process.env.NODE_ENV === 'development') require('dotenv').config();
 import * as env from './env';
 import * as path from 'path';
 
-import React, { Component, FormEvent } from 'react';
-
-// import logo from './logo.svg';
-import './normalize.css'
-import './App.scss';
-
+import React from 'react';
 import { IO, makeGetQuery, apiCall } from './utils';
+
+import './App.scss';
 
 import {
     Navigation,
@@ -42,18 +39,18 @@ class App extends React.Component {
         basePath: '/home/axatol/Downloads'
     };
 
-    componentDidMount() {
+    componentDidMount(): void {
         this.statDir(this.state.basePath);
     }
 
     async statServer(): Promise<void> {
-        const response: any = await fetch('/api/live/', { method: 'GET' });
+        const response: Response = await fetch('/api/live/', { method: 'GET' });
 
-        if (response.status !== 200 || !(/application\/json/g.test(response.headers.get('content-type')))) {
+        if (response.status !== 200 || !(/application\/json/g.test(response.headers.get('content-type') || ''))) {
             throw new Error(await response.text());
         }
 
-        const body = await response.json();
+        const body: any = await response.json();
 
         this.setState({
             server: {
@@ -67,7 +64,7 @@ class App extends React.Component {
     async statDir(dirPath: string): Promise<void> {
         if (!dirPath || dirPath === '') return;
 
-        const url = '/api/dir?' + makeGetQuery({ dir: dirPath, type: 'directory' });
+        const url: string = '/api/dir?' + makeGetQuery({ dir: dirPath, type: 'directory' });
         let response: Response;
         try {
             response = await apiCall(url);

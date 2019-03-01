@@ -1,12 +1,10 @@
-import React from 'react';
+import * as path from 'path';
 
+import React from 'react';
+import { IO, makeGetQuery, apiCall } from '../../utils';
 import { Img, IImgProps, IImgState } from './Components/Img';
 
 import './Gallery.scss';
-import { IO, makeGetQuery, apiCall } from '../../utils';
-
-import * as path from 'path';
-// import * as fs from 'fs';
 
 export interface IGalleryProps {
     io: IO;
@@ -24,7 +22,6 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
         dirInput: '',
         cover: {} as IImgProps,
         type: 'longstrip',
-        collapsed: true,
     };
 
     constructor(props: IGalleryProps) {
@@ -36,12 +33,8 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
         this.fetchDirImages(this.props.path);
     }
 
-    setCollapsed(value: boolean) {
-        this.setState({ collapsed: value });
-    }
-
     async fetchDirImages(dirPath: string): Promise<void> {
-        const url = '/api/dir?' + makeGetQuery({ dir: dirPath, type: 'image' });
+        const url: string = '/api/dir?' + makeGetQuery({ dir: dirPath, type: 'image' });
         let response: Response;
         try {
             response = await apiCall(url);
@@ -50,17 +43,20 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
             return;
         }
 
-        const body = await response!.json();
+        const body: any = await response!.json();
         if (body.contents) {
             const images = body.contents.map((imageName: string) => {
-                const imgProps = {
+                const imgProps: IImgProps = {
                     id: imageName,
                     type: ((/(0+(1|0)|cover)\.(jp(e)?g|png)/ig.test(imageName)) ? 'cover' : ''),
                     src: '/api/file?file=' + encodeURIComponent(path.join(dirPath, imageName)),
                 };
 
-                if (imgProps.type === 'cover') this.setState({ cover: imgProps });
-                return imgProps
+                if (imgProps.type === 'cover') {
+                    this.setState({ cover: imgProps });
+                }
+
+                return imgProps;
             });
 
             this.setState({ images });
@@ -69,7 +65,7 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
 
     renderImages(): JSX.Element {
         if (this.state.images.length > 0) {
-            const images = this.state.images.map((image: IImgProps) => 
+            const images: JSX.Element[] = this.state.images.map((image: IImgProps) => 
                 <Img
                     key={image.id}
                     src={image.src}
@@ -99,7 +95,7 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
     }
 
     render() {
-        if (this.state.collapsed) {
+        if (this.props.collapsed) {
             return (
                 <div className="Gallery collapsed">
 
