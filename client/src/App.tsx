@@ -1,5 +1,6 @@
 if (process.env.NODE_ENV === 'development') require('dotenv').config();
-import * as env from './env'; 
+import * as env from './env';
+import * as path from 'path';
 
 import React, { Component, FormEvent } from 'react';
 
@@ -7,104 +8,168 @@ import React, { Component, FormEvent } from 'react';
 import './normalize.css'
 import './App.scss';
 
-import { IO, makeGetQuery } from './utils';
+import { IO, makeGetQuery, apiCall } from './utils';
 
 import {
-  Navigation,
-  Gallery,
-  Footer,
-  Debug,
+    Navigation,
+    Gallery,
+    Footer,
+    Debug,
 } from './Components/index';
 
 interface IManifest {
-  alias: string;
-  path: string;
-  meta: object;
+    alias: string;
+    path: string;
+    meta: object;
 }
 
 class Manifest {
-  constructor(props?: IManifest) {}
+    constructor(props?: IManifest) { }
 }
 
-class App extends React.Component{
-  io = new IO();
+class App extends React.Component {
+    io = new IO();
 
-  state = {
-    server: {
-      status: 'offline',
-      message: 'none',
-    },
-    serverIntervalCheck: setInterval(() => this.statServer(), 2000),
-  };
+    state = {
+        server: {
+            status: 'offline',
+            message: 'none',
+        },
+        serverIntervalCheck: setInterval(() => this.statServer(), 2000),
+        dirInput: '',
+        directories: [ '/home/axatol/Downloads' ],
+        activeGallery: undefined,
+        basePath: '/home/axatol/Downloads'
+    };
 
-
-  async statServer(): Promise<void> {
-    const response: any = await fetch('/api/live/', { method: 'GET' });
-
-    if (response.status !== 200 || !(/application\/json/g.test(response.headers.get('content-type')))) {
-      throw new Error(await response.text());
+    componentDidMount() {
+        this.statDir(this.state.basePath);
     }
 
-    const body = await response.json();
+    async statServer(): Promise<void> {
+        const response: any = await fetch('/api/live/', { method: 'GET' });
 
-    this.setState({
-      server: {
-        ...this.state.server,
-        status: 'online',
-        message: body.message,
-      }
-    });
-  }
+        if (response.status !== 200 || !(/application\/json/g.test(response.headers.get('content-type')))) {
+            throw new Error(await response.text());
+        }
 
-  componentDidMount() {}
+        const body = await response.json();
 
-  render() {
-
-    if (this.state.server.status === 'online') {
-      clearInterval(this.state.serverIntervalCheck);
+        this.setState({
+            server: {
+                ...this.state.server,
+                status: 'online',
+                message: body.message,
+            }
+        });
     }
 
-    if (this.state.server.status !== 'online') {
-      return (
-        <div className='App'>
-          <div className='server-err'>
-            <p>Server is not online, waiting for backend to start</p>
-            <p>Server status: {this.state.server.status}, message: {this.state.server.message}</p>
-          </div>
-        </div>
-      );
+    async statDir(dirPath: string): Promise<void> {
+        if (!dirPath || dirPath === '') return;
+
+        const url = '/api/dir?' + makeGetQuery({ dir: dirPath, type: 'directory' });
+        let response: Response;
+        try {
+            response = await apiCall(url);
+        } catch (err) {
+            console.log(err);
+            return;
+        }
+
+        const body = await response!.json();
+        if (body.contents) {
+            this.setState({ directories: body.contents });
+        }
     }
 
-    if (env.DEBUG && env.DEBUG === 'API') {
-      return (
-        <div className='App'>
-          
-          <Debug
-            io={this.io}
-          />
-
-        </div>
-      );
+    setDir(e: React.FormEvent): void {
+        e.preventDefault();
+        this.statDir(this.state.dirInput);
     }
 
-    return (
-      <div className='App'>
+    setActiveGallery(e: any): void {
+        console.log('test')
+        console.log(e.target);
+    }
 
-        <Navigation
-          io={this.io}
-        />
+    renderGalleries(): JSX.Element {
+        if (this.state.activeGallery) {console.log('test')}
 
-        <Gallery
-          io={this.io}
-          path='/home/axatol/Pictures'
-        />
+        const galleries: JSX.Element[] = this.state.directories.map((directory: string) => 
+            <Gallery
+                key={directory}
+                io={this.io}
+                path={path.join(this.state.basePath, directory)}
+                collapsed={true}
+            />
+        );
+        
+        return (<div className='gallery-array'>{galleries}</div>);
+    }
 
-        <Footer
-        />
+    render() {
 
-      </div>
-    );
-  }
+        if (this.state.server.status === 'online') {
+            clearInterval(this.state.serverIntervalCheck);
+        }
+
+        if (this.state.server.status !== 'online') {
+            return (
+                <div className='App'>
+                    <div className='server-err'>
+                        <p>Server is not online, waiting for backend to start</p>
+                        <p>Server status: {this.state.server.status}, message: {this.state.server.message}</p>
+                    </div>
+                </div>
+            );
+        }
+
+        if (env.DEBUG && env.DEBUG === 'API') {
+            return (
+                <div className='App'>
+
+                    <Debug
+                        io={this.io}
+                    />
+
+                </div>
+            );
+        }
+
+        return (
+            <div className='App'>
+
+                {/* set root dir, set state, generate galleries */}
+
+                <Navigation
+                    io={this.io}
+                />
+
+                <div className='container'>
+
+                    <form className='change-directory' onSubmit={this.setDir}>
+                        <p>set current directory: </p>
+                        <input
+                            type='text'
+                            value={this.state.dirInput}
+                            onChange={e => this.setState({ dirInput: e.currentTarget.value })}
+                        />
+                        <button
+                            type='submit'
+                            onClick={this.setDir.bind(this)}
+                        >submit</button>
+                    </form>
+
+                    {this.renderGalleries()}
+
+                </div>
+
+                <Footer
+                />
+
+            </div>
+        );
+    }
 }
 
 export default App;

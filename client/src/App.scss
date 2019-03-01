@@ -13,14 +13,46 @@
     font-family: $font;
   }
 
+  .change-directory {
+    display: flex;
+
+    *:not(p) {
+        color: black;
+        margin: 0.5em;
+    }
+  }
+
   .Navigation {
     height: 3em;
   }
 
-  .Gallery {
-    margin: 0 auto 0 auto;
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 90vw;
-    flex-grow: 1;
+    min-height: 85vh;
+    margin: 0 auto 0 auto;
+
+    background-color: $color-secondary;
+
+    .gallery-array {
+      display: flex;
+
+      .Gallery {
+        margin: 0 auto 0 auto;
+        width: 90vw;
+        flex-grow: 1;
+      }
+      
+      .Gallery.collapsed {
+        width: 10em;
+        height: 12em;
+        flex-grow: 0;
+        margin: 1em;
+        padding: 0.2em;
+      }
+    }
   }
 
   .Footer {

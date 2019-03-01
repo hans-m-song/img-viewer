@@ -17,15 +17,28 @@ app.get('/api/live', (req, res) => {
 });
 
 app.get('/api/dir', (req, res) => {
-    if (!req.query.dir) 
+    if (!req.query.dir) {
         res.status(403).send({ message: 'no directory provided' });
-    
+        return;
+    }
+    const type = req.query.type || 'image';
+
     // TODO limit places someone could request
 
     let contents;
     try {
-        contents = fs.readdirSync(path.resolve(req.query.dir))
-            .filter(fileName => /(jp(e)?g|png)/ig.test(fileName));
+        if (type === 'directory') {
+            contents = fs.readdirSync(path.resolve(req.query.dir))
+                .filter(fileName => fs.lstatSync(path.join(req.query.dir, fileName)).isDirectory());
+        } else
+        if (type === 'image') {
+            contents = fs.readdirSync(path.resolve(req.query.dir))
+                .filter(fileName => fs.lstatSync(path.join(req.query.dir, fileName)).isFile() 
+                    && /(jp(e)?g|png)/ig.test(fileName));
+        } else {
+            res.status(403).send({ message: `unhandled type request: ${type}` });
+            return;
+        }
     } catch (err) {
         if (err.code === 'ENOENT') {
             res.status(404).send({
@@ -36,6 +49,7 @@ app.get('/api/dir', (req, res) => {
             });
         } else {
             res.status(404).send(err);
+            return;
         }
     }
 
