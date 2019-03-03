@@ -31,7 +31,7 @@ class App extends React.Component {
     state = {
         server: {
             status: 'offline',
-            message: 'none',
+            lastMessage: 'none',
         },
         serverIntervalCheck: setInterval(() => this.statServer(), 2000),
         dirInput: '',
@@ -49,21 +49,27 @@ class App extends React.Component {
     }
 
     async statServer(): Promise<void> {
-        const response: Response = await apiCall('/api/live');
-
-        if (response.status !== 200 || !(/application\/json/g.test(response.headers.get('content-type') || ''))) {
-            throw new Error(await response.text());
+        try {
+            const response: Response = await apiCall('/api/live');
+    
+            const body: any = await response.json();
+    
+            this.setState({
+                server: {
+                    ...this.state.server,
+                    status: 'online',
+                    lastMessage: body.message,
+                }
+            });
+        } catch (err) {
+            console.log(err.message);
+            this.setState({
+                server: {
+                    ...this.state.server,
+                    status: 'offline',
+                }
+            });
         }
-
-        const body: any = await response.json();
-
-        this.setState({
-            server: {
-                ...this.state.server,
-                status: 'online',
-                message: body.message,
-            }
-        });
     }
 
     async statDir(dirPath: string): Promise<void> {
@@ -131,16 +137,12 @@ class App extends React.Component {
 
     render() {
 
-        if (this.state.server.status === 'online') {
-            clearInterval(this.state.serverIntervalCheck);
-        }
-
         if (this.state.server.status !== 'online') {
             return (
                 <div className='App'>
                     <div className='server-err'>
                         <p>Server is not online, waiting for backend to start</p>
-                        <p>Server status: {this.state.server.status}, message: {this.state.server.message}</p>
+                        <p>Server status: {this.state.server.status}, lastMessage: {this.state.server.lastMessage}</p>
                     </div>
                 </div>
             );
