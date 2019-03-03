@@ -34,11 +34,14 @@
     width: 90vw;
     min-height: 85vh;
     margin: 0 auto 0 auto;
+    padding: 0.5em 0 0.5em 0;
 
     background-color: $color-secondary;
 
     .gallery-array {
       display: flex;
+      flex-wrap: wrap;
+      justify-content: space-evenly;
 
       .Gallery {
         margin: 0 auto 0 auto;
@@ -47,10 +50,10 @@
       }
       
       .Gallery.collapsed {
-        width: 10em;
-        height: 12em;
+        width: 12em;
+        height: 14.5em;
         flex-grow: 0;
-        margin: 1em;
+        margin: 0.5em;
         padding: 0.2em;
       }
     }

@@ -10,11 +10,13 @@ export interface IGalleryProps {
     io: IO;
     path: string;
     collapsed: boolean;
+    setRef: React.RefObject<Gallery>;
 }
 
 export interface IGalleryState {}
 
 export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
+
     io: IO;
 
     state = {
@@ -44,22 +46,24 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
         }
 
         const body: any = await response!.json();
-        if (body.contents) {
+        if (body.contents && body.contents.length > 0) {
             const images = body.contents.map((imageName: string) => {
                 const imgProps: IImgProps = {
                     id: imageName,
-                    type: ((/(0+(1|0)|cover)\.(jp(e)?g|png)/ig.test(imageName)) ? 'cover' : ''),
+                    type: '',
                     src: '/api/file?file=' + encodeURIComponent(path.join(dirPath, imageName)),
                 };
-
-                if (imgProps.type === 'cover') {
-                    this.setState({ cover: imgProps });
-                }
 
                 return imgProps;
             });
 
-            this.setState({ images });
+            const cover = {
+                id: body.contents[0],
+                type: 'cover', // ((/(0+1|cover).*\.(jp(e)?g|png)/ig.test(imageName)) ? 'cover' : '')
+                src: '/api/file?file=' + encodeURIComponent(path.join(dirPath, `${body.contents[0]}`))
+            };
+
+            this.setState({ images, cover });
         }
     }
 
@@ -97,10 +101,25 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
     render() {
         if (this.props.collapsed) {
             return (
-                <div className="Gallery collapsed">
+                <div className="Gallery collapsed" ref={this.props.setRef as any}>
 
-                    <p className='gallery-title'>{path.basename(this.props.path)}</p>
-
+                    {(() => {
+                        const title = path.basename(this.props.path);
+                        const matches = title.match(/\d+/g);
+                        if (matches) {
+                            return (
+                                <div className='gallery-header'>
+                                    <p className='title'>{title}</p>
+                                    <p className='index'>{matches.pop()}</p>
+                                </div>
+                            );
+                        }
+                        return (
+                            <div className='gallery-header'>
+                                <p className='title'>{title}</p>
+                            </div>);
+                    })()}
+                        
                     <div className='cover-container'>
                         {(() => {
                             if (Object.values(this.state.cover).length) {

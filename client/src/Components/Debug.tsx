@@ -2,7 +2,7 @@ if (process.env.NODE_ENV === 'development') require('dotenv').config();
 import * as env from '../env';
 
 import React, { Component, FormEvent } from 'react';
-import { IO, makeGetQuery } from '../utils';
+import { IO, makeGetQuery, apiCall } from '../utils';
 
 interface IDebugProps {
     io: IO;
@@ -52,10 +52,6 @@ export class Debug extends React.Component<IDebugProps, IDebugState> {
 
         const response = await fetch(this.state.payload.endpoint.route, {
             method: this.state.payload.endpoint.method,
-            headers: {
-                'content-type': 'application/json',
-            },
-            
         });
         const body = await response.text();
         this.io.log('received response', body)
@@ -64,6 +60,7 @@ export class Debug extends React.Component<IDebugProps, IDebugState> {
 
     handlePostSubmit = async (e: FormEvent<HTMLFormElement>, endpoint: string): Promise<void> => {
         e.preventDefault();
+
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
@@ -78,14 +75,10 @@ export class Debug extends React.Component<IDebugProps, IDebugState> {
 
     handleGetSubmit = async (e: FormEvent<HTMLFormElement>, endpoint: string): Promise<void> => {
         e.preventDefault();
+        
         const url = `${endpoint}?${makeGetQuery({ dir: this.state.get })}`
         this.io.log(url)
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'content-type': 'application/json'
-            }
-        });
+        const response = await apiCall(url);
         const body = await response.text();
         this.io.log('received response', body);
         this.setState({ responseToRequest: body })
@@ -93,7 +86,7 @@ export class Debug extends React.Component<IDebugProps, IDebugState> {
 
     getEndpoints = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
-        const response = await fetch('/api', { method: 'GET' });
+        const response = await apiCall('/api');
         const endpoints: { endpoints: Endpoint[], message: string } = (await response.json()).endpoints;
         this.setState({ endpoints });
     }

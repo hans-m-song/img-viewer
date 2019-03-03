@@ -34,9 +34,10 @@ class App extends React.Component {
         },
         serverIntervalCheck: setInterval(() => this.statServer(), 2000),
         dirInput: '',
-        directories: [ '/home/axatol/Downloads' ],
+        directories: [ '/home/axatol/Pictures/test' ],
+        galleryRefs: [],
         activeGallery: undefined,
-        basePath: '/home/axatol/Downloads'
+        basePath: '/home/axatol/Pictures/test'
     };
 
     componentDidMount(): void {
@@ -44,7 +45,7 @@ class App extends React.Component {
     }
 
     async statServer(): Promise<void> {
-        const response: Response = await fetch('/api/live/', { method: 'GET' });
+        const response: Response = await apiCall('/api/live');
 
         if (response.status !== 200 || !(/application\/json/g.test(response.headers.get('content-type') || ''))) {
             throw new Error(await response.text());
@@ -75,7 +76,18 @@ class App extends React.Component {
 
         const body = await response!.json();
         if (body.contents) {
-            this.setState({ directories: body.contents });
+            this.setState({
+                directories: body.contents/*.sort((a: string, b: string): number => {
+                    const getIndex = (input: string) => {
+                        const matches = input.match(/\d+/g);
+                        if (matches) {
+                            return Number.parseInt(matches!.pop()!) || 0;
+                        }
+                        return 0;
+                    }
+                    return getIndex(a) - getIndex(b);
+                })*/,
+                basePath: dirPath });
         }
     }
 
@@ -91,15 +103,16 @@ class App extends React.Component {
 
     renderGalleries(): JSX.Element {
         if (this.state.activeGallery) {console.log('test')}
-
-        const galleries: JSX.Element[] = this.state.directories.map((directory: string) => 
-            <Gallery
+        const galleries: JSX.Element[] = this.state.directories.map((directory: string) => {
+            const ref: React.RefObject<Gallery> = React.createRef();
+            return <Gallery
                 key={directory}
                 io={this.io}
                 path={path.join(this.state.basePath, directory)}
                 collapsed={true}
+                setRef={ref}
             />
-        );
+        });
         
         return (<div className='gallery-array'>{galleries}</div>);
     }
@@ -144,6 +157,7 @@ class App extends React.Component {
 
                 <div className='container'>
 
+                    {/* TODO integrate into navbar */}
                     <form className='change-directory' onSubmit={this.setDir}>
                         <p>set current directory: </p>
                         <input
