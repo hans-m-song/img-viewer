@@ -3,6 +3,7 @@ import * as env from './env';
 import * as path from 'path';
 
 import React from 'react';
+import { Router } from 'react-router';
 import { IO, makeGetQuery, apiCall } from './utils';
 
 import './App.scss';
@@ -34,11 +35,14 @@ class App extends React.Component {
         },
         serverIntervalCheck: setInterval(() => this.statServer(), 2000),
         dirInput: '',
-        directories: [ '/home/axatol/Pictures/test' ],
-        galleryRefs: [],
-        activeGallery: undefined,
+        directories: [],
         basePath: '/home/axatol/Pictures/test'
     };
+
+    constructor (props: any) {
+        super(props);
+        this.setActiveGallery.bind(this);
+    }
 
     componentDidMount(): void {
         this.statDir(this.state.basePath);
@@ -96,25 +100,33 @@ class App extends React.Component {
         this.statDir(this.state.dirInput);
     }
 
-    setActiveGallery(e: any): void {
-        console.log('test')
-        console.log(e.target);
+    setActiveGallery(e: React.MouseEvent, data: any): void {
+        console.log('setactivegallery');
+        console.log(this.state, data)
+        // this.setState({ redirectTo: '/gallery/' + data.directory });
     }
 
     renderGalleries(): JSX.Element {
-        if (this.state.activeGallery) {console.log('test')}
-        const galleries: JSX.Element[] = this.state.directories.map((directory: string) => {
-            const ref: React.RefObject<Gallery> = React.createRef();
-            return <Gallery
-                key={directory}
-                io={this.io}
-                path={path.join(this.state.basePath, directory)}
-                collapsed={true}
-                setRef={ref}
-            />
-        });
-        
-        return (<div className='gallery-array'>{galleries}</div>);
+        if (this.state.directories.length > 0) {
+            const galleries: JSX.Element[] = this.state.directories.map((directory: string) => {
+                const ref: React.RefObject<Gallery> = React.createRef();
+                return <Gallery
+                    key={directory}
+                    io={this.io}
+                    directory={path.join(this.state.basePath, directory)}
+                    collapsed={true}
+                    onClick={this.setActiveGallery.bind(this)}
+                />
+            });
+            
+            return (<div className='gallery-array'>{galleries}</div>);
+        }
+
+        return (
+            <div className='gallery-array empty'>
+                <p>nothing found in this directory</p>
+            </div>
+        );
     }
 
     render() {
@@ -162,7 +174,7 @@ class App extends React.Component {
                         <p>set current directory: </p>
                         <input
                             type='text'
-                            value={this.state.dirInput}
+                            value={((this.state.dirInput != '') ? this.state.dirInput : this.state.basePath)}
                             onChange={e => this.setState({ dirInput: e.currentTarget.value })}
                         />
                         <button

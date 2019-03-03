@@ -8,9 +8,9 @@ import './Gallery.scss';
 
 export interface IGalleryProps {
     io: IO;
-    path: string;
+    directory: string;
     collapsed: boolean;
-    setRef: React.RefObject<Gallery>;
+    onClick(e: React.MouseEvent, data: any): void;
 }
 
 export interface IGalleryState {}
@@ -32,11 +32,11 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
     }
 
     componentDidMount(): void {
-        this.fetchDirImages(this.props.path);
+        this.fetchDirImages(this.props.directory);
     }
 
-    async fetchDirImages(dirPath: string): Promise<void> {
-        const url: string = '/api/dir?' + makeGetQuery({ dir: dirPath, type: 'image' });
+    async fetchDirImages(directory: string): Promise<void> {
+        const url: string = '/api/dir?' + makeGetQuery({ dir: directory, type: 'image' });
         let response: Response;
         try {
             response = await apiCall(url);
@@ -51,7 +51,7 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
                 const imgProps: IImgProps = {
                     id: imageName,
                     type: '',
-                    src: '/api/file?file=' + encodeURIComponent(path.join(dirPath, imageName)),
+                    src: '/api/file?file=' + encodeURIComponent(path.join(directory, imageName)),
                 };
 
                 return imgProps;
@@ -60,7 +60,7 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
             const cover = {
                 id: body.contents[0],
                 type: 'cover', // ((/(0+1|cover).*\.(jp(e)?g|png)/ig.test(imageName)) ? 'cover' : '')
-                src: '/api/file?file=' + encodeURIComponent(path.join(dirPath, `${body.contents[0]}`))
+                src: '/api/file?file=' + encodeURIComponent(path.join(directory, `${body.contents[0]}`))
             };
 
             this.setState({ images, cover });
@@ -90,7 +90,7 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
 
     setDir(e: React.FormEvent): void {
         e.preventDefault();
-        this.fetchDirImages(this.state.dirInput || this.props.path);
+        this.fetchDirImages(this.state.dirInput || this.props.directory);
     }
 
     handleClick(e: React.MouseEvent) {
@@ -101,10 +101,10 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
     render() {
         if (this.props.collapsed) {
             return (
-                <div className="Gallery collapsed" ref={this.props.setRef as any}>
+                <div className="Gallery collapsed" onClick={e => this.props.onClick(e, { directory: this.props.directory })}>
 
                     {(() => {
-                        const title = path.basename(this.props.path);
+                        const title = path.basename(this.props.directory);
                         const matches = title.match(/\d+/g);
                         if (matches) {
                             return (
@@ -144,7 +144,7 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
                     <p>set current directory: </p>
                     <input
                         type='text'
-                        value={this.state.dirInput || this.props.path}
+                        value={this.state.dirInput || this.props.directory}
                         onChange={e => this.setState({ dirInput: e.currentTarget.value })}
                     />
                     <button
