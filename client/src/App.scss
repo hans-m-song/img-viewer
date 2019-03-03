@@ -14,7 +14,7 @@
     font-family: $font;
   }
 
-  .change-directory {
+  form {
     display: flex;
 
     *:not(p) {
@@ -41,11 +41,11 @@
     .gallery-array {
       display: flex;
       flex-wrap: wrap;
+      width: inherit;
       justify-content: space-evenly;
 
       .Gallery {
         margin: 0 auto 0 auto;
-        width: 90vw;
         flex-grow: 1;
       }
       

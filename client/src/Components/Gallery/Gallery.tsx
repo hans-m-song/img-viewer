@@ -35,7 +35,7 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
         this.fetchDirImages(this.props.directory);
     }
 
-    async fetchDirImages(directory: string): Promise<void> {
+    fetchDirImages = async (directory: string): Promise<void> => {
         const url: string = '/api/dir?' + makeGetQuery({ dir: directory, type: 'image' });
         let response: Response;
         try {
@@ -67,7 +67,7 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
         }
     }
 
-    renderImages(): JSX.Element {
+    renderImages = (): JSX.Element => {
         if (this.state.images.length > 0) {
             const images: JSX.Element[] = this.state.images.map((image: IImgProps) => 
                 <Img
@@ -88,12 +88,12 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
         );
     }
 
-    setDir(e: React.FormEvent): void {
+    setDir = (e: React.FormEvent): void => {
         e.preventDefault();
         this.fetchDirImages(this.state.dirInput || this.props.directory);
     }
 
-    handleClick(e: React.MouseEvent) {
+    handleClick = (e: React.MouseEvent) => {
         e.preventDefault();
         console.log('test', this);
     }
@@ -101,7 +101,7 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
     render() {
         if (this.props.collapsed) {
             return (
-                <div className="Gallery collapsed" onClick={e => this.props.onClick(e, { directory: this.props.directory })}>
+                <div className="Gallery collapsed" onClick={e => this.props.onClick(e, this.props.directory)}>
 
                     {(() => {
                         const title = path.basename(this.props.directory);
@@ -140,7 +140,7 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
         return (
             <div className="Gallery">
 
-                <form className='change-directory' onSubmit={this.setDir}>
+                {/* <form className='change-directory' onSubmit={this.setDir}>
                     <p>set current directory: </p>
                     <input
                         type='text'
@@ -151,7 +151,7 @@ export class Gallery extends React.Component<IGalleryProps, IGalleryState> {
                         type='submit'
                         onClick={this.setDir.bind(this)}
                     >submit</button>
-                </form>
+                </form> */}
 
                 {this.renderImages()}
                 

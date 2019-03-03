@@ -3,7 +3,6 @@ import * as env from './env';
 import * as path from 'path';
 
 import React from 'react';
-import { Router } from 'react-router';
 import { IO, makeGetQuery, apiCall } from './utils';
 
 import './App.scss';
@@ -36,19 +35,20 @@ class App extends React.Component {
         serverIntervalCheck: setInterval(() => this.statServer(), 2000),
         dirInput: '',
         directories: [],
-        basePath: '/home/axatol/Pictures/test'
+        displayType: 'directory',
+        history: [],
+        basePath: '/home/axatol/Pictures/test',
     };
 
     constructor (props: any) {
         super(props);
-        this.setActiveGallery.bind(this);
     }
 
     componentDidMount(): void {
         this.statDir(this.state.basePath);
     }
 
-    async statServer(): Promise<void> {
+    statServer = async (): Promise<void> => {
         try {
             const response: Response = await apiCall('/api/live');
     
@@ -72,10 +72,10 @@ class App extends React.Component {
         }
     }
 
-    async statDir(dirPath: string): Promise<void> {
-        if (!dirPath || dirPath === '') return;
+    statDir = async (directory: string): Promise<void> => {
+        if (!directory || directory === '') return;
 
-        const url: string = '/api/dir?' + makeGetQuery({ dir: dirPath, type: 'directory' });
+        const url: string = '/api/dir?' + makeGetQuery({ dir: directory, type: 'directory' });
         let response: Response;
         try {
             response = await apiCall(url);
@@ -87,6 +87,8 @@ class App extends React.Component {
         const body = await response!.json();
         if (body.contents) {
             this.setState({
+                basePath: directory,
+                // history: [ ...this.state.history, directory ],
                 directories: body.contents/*.sort((a: string, b: string): number => {
                     const getIndex = (input: string) => {
                         const matches = input.match(/\d+/g);
@@ -97,22 +99,44 @@ class App extends React.Component {
                     }
                     return getIndex(a) - getIndex(b);
                 })*/,
-                basePath: dirPath });
+            });
         }
     }
 
-    setDir(e: React.FormEvent): void {
+    setActiveDirectory = async (e: React.MouseEvent | React.FormEvent, directory: string): Promise<void> => {
         e.preventDefault();
-        this.statDir(this.state.dirInput);
+        const currentDir = this.state.basePath;
+        await this.statDir(directory);
+        if (this.state.basePath !== currentDir) {
+            this.setState({ history: [ ...this.state.history, currentDir ] });
+        }
+        this.setState({ dirInput: '' });
     }
 
-    setActiveGallery(e: React.MouseEvent, data: any): void {
-        console.log('setactivegallery');
-        console.log(this.state, data)
-        // this.setState({ redirectTo: '/gallery/' + data.directory });
+    back = (e: React.FormEvent): void => {
+        e.preventDefault();
+        if (this.state.history.length > 0) {
+            const history = [ ...this.state.history ];
+            const lastDirectory = history.pop();
+            this.setState({ history });
+            this.statDir(lastDirectory!);
+        }
     }
 
-    renderGalleries(): JSX.Element {
+    renderGalleries = (): JSX.Element => {
+        if (this.state.displayType === 'gallery') {
+            return (
+                <div className='gallery-array single'>
+                    <Gallery
+                        io={this.io}
+                        directory={this.state.basePath}
+                        collapsed={false}
+                        onClick={() => {}}
+                    />
+                </div>
+            );
+        }
+
         if (this.state.directories.length > 0) {
             const galleries: JSX.Element[] = this.state.directories.map((directory: string) => {
                 const ref: React.RefObject<Gallery> = React.createRef();
@@ -121,7 +145,7 @@ class App extends React.Component {
                     io={this.io}
                     directory={path.join(this.state.basePath, directory)}
                     collapsed={true}
-                    onClick={this.setActiveGallery.bind(this)}
+                    onClick={this.setActiveDirectory}
                 />
             });
             
@@ -172,17 +196,38 @@ class App extends React.Component {
                 <div className='container'>
 
                     {/* TODO integrate into navbar */}
-                    <form className='change-directory' onSubmit={this.setDir}>
-                        <p>set current directory: </p>
+                    <form className='change-directory' onSubmit={e => this.setActiveDirectory(e, this.state.dirInput)}>
+                        <p>set directory: </p>
                         <input
                             type='text'
-                            value={((this.state.dirInput != '') ? this.state.dirInput : this.state.basePath)}
+                            value={this.state.dirInput}
                             onChange={e => this.setState({ dirInput: e.currentTarget.value })}
                         />
-                        <button
+                        <button 
+                            type='submit'>
+                            submit</button>
+                        <button 
                             type='submit'
-                            onClick={this.setDir.bind(this)}
-                        >submit</button>
+                            onClick={e => {e.preventDefault();this.setState({ dirInput: this.state.basePath });}}>
+                            current
+                        </button>
+                        <button 
+                            type='submit'
+                            onClick={e => {e.preventDefault();this.setState({ dirInput: '' });}}>
+                            x
+                        </button>
+                    </form>
+
+                    <form className='change-display' onSubmit={e => e.preventDefault()}>
+                        <p>set directory display type: </p>
+                        <select value={this.state.displayType} onChange={e => this.setState({ displayType: e.currentTarget.value })}>
+                            <option value='directory'>directory</option>
+                            <option value='gallery'>gallery</option>
+                        </select>
+                    </form>
+
+                    <form className='btn-return' onSubmit={this.back}>
+                        <button type='submit'>back</button>
                     </form>
 
                     {this.renderGalleries()}
