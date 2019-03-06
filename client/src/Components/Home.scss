@@ -1,0 +1,25 @@
+@import '../vars.scss';
+
+.Home {
+    background-color: $color-secondary;
+
+    .gallery-array {
+        display: flex;
+        flex-wrap: wrap;
+        width: inherit;
+        justify-content: space-evenly;
+
+        .Gallery {
+          margin: 0 auto 0 auto;
+          flex-grow: 1;
+        }
+        
+        .Gallery.collapsed {
+          width: 12em;
+          height: 14.5em;
+          flex-grow: 0;
+          margin: 0.5em;
+          padding: 0.2em;
+        }
+    }
+}

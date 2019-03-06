@@ -18,13 +18,6 @@ export class Navigation extends React.Component<INavigationProps, INavigationSta
 
                 <div className=''>banner</div>
 
-                <nav className=''>
-                    <a className='' href='#'>import session</a>
-                    <a className='' href='#'>export session</a>
-                    <a className='' href='#'>import directory</a>
-                    <a className='' href='#'>import archive</a>
-                </nav>
-
                 <Settings/>
             </div>
         );
